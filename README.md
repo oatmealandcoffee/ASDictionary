@@ -22,6 +22,7 @@ In general, I would like to align functionality with mutable dictionary classes 
 * Access values by index
 * Remove key-value pairs, in part or all
 * string value/description for text output
+* seperate keys and values to seperate lists to speed up the `getKeys()` subroutine
 * Better error reporting. Right now, it only uses missing value, but that isn't very informative as a few things can go wrong. I had errors in the previous iteration but they weren't handled very well.
 * Hash table management could use a bit of optimizing, but it is fast (for Applescript) and it works.
 
