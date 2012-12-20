@@ -1,3 +1,16 @@
+(*
+Project: ASDictionary: A pure Applescript dictionary class to pick up where the record class left off
+Author(s): Philip Regan
+License: Copyright 2012 Philip Regan, http://www.oatmealandcoffee.com
+Source:	New source only; no adaptations.
+Requirements: None
+Notes:
+Change History:
+    12_12_10_01_00_000: Started public source
+    12_12_10_01_00_001: Changed remaining mentions of kASDictionary_ValueNotFound to missing value
+    						Added header comments
+*)
+
 on run {}
 	
 	set testDictionary to MakeDictionary() of me
@@ -65,7 +78,7 @@ on run {}
 		log "set theValueForKey to valueForKey(supercalifrajilisticexpialidocious)"
 		set theValueForKey to valueForKey("supercalifrajilisticexpialidocious")
 		log theValueForKey
-		-- we should get back the kASDictionary_ValueNotFound error message here
+		-- we should get back missing value here
 		
 		(* Check to make sure our data is clean so we don't mess up operations later *)
 		
@@ -80,10 +93,6 @@ end run
 on MakeDictionary() -- as ASDictionary
 	
 	script ASDictionary
-		
-		(* Public properties *)
-		
-		property kASDictionary_ValueNotFound : "kASDictionary_ValueNotFound"
 		
 		(* Private properties *)
 		
@@ -156,7 +165,7 @@ on MakeDictionary() -- as ASDictionary
 			
 		end setValueForKey
 		
-		to valueForKey(aKey) -- (object) as object or (kASDictionary_ValueNotFound as string)
+		to valueForKey(aKey) -- (object) as object or (mising value)
 			
 			set keyValueIndex to __getIndexForKey(aKey) of me
 			
