@@ -30,23 +30,28 @@ Documentation
 
 **Introduction**
 
-Essentially, the class is a wrapper for a private list of records with the format {key:data, value:data}. When a key value pair is created, the pair is placed at the end of a list ("array" in non-Applescript terms) and the index recorded in the hash table by the key. Retrieving values is nothing more than seeing if each character has a place in the hash table, getting the index on the last character, and returning the value for that pair. When in doubt about anything, the dictionary returns missing value.
+Essentially, the class is a wrapper for a private list of `records` with the format `{key:data, value:data}`. When a key value pair is created, the pair is placed at the end of a `list` and the index recorded in the hash table by the key. Retrieving values is nothing more than seeing if each character has a place in the hash table, getting the index on the last character, and returning the value for that pair. When in doubt about anything, the dictionary returns *`missing value`*.
 
 **Caveats**
 
 *Script Objects and memory*
 
-This uses the Script Object features of Applescript, which allows custom OOP in Applescript complete with inheritance. The caveat is that doing this can be very resource and memory intensive.
-If you are not familiar with Script Objects, then I highly suggest you read the Applescript Language Guide. Suffice to say, however, that all of the action, the class in of itself, is held within the script OCDictionary...end script block within the MakeDictionary() subroutine.
-Unicode Key Support
+This uses the `Script Object` features of Applescript, which allows custom OOP in Applescript complete with inheritance. The caveat is that doing this can be very resource and memory intensive.
 
-Applescript's text class supports Unicode, moving from ASCII a while ago. Unicode is much broader in scope over ASCII, but OCDictionary still checks to be sure that keys are built using an ASCII-centric character set. The currently supported characters include Unicode value 48 ('0') contiguously through 122 ('z') shown in order here:
-0123456789:'<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
-This limitation is based on OCDictionary's current iteration requiring each node in the hash table hold an array aligned with the numerical value of each character regardless if the array is populated. Supporting the full Unicode set would consume far too much memory even for the shallowest of tables, so sticking with characters 48 through 122 maintains a manageable but still useful character set.
+If you are not familiar with `Script Objects`, then I highly suggest you read the Applescript Language Guide. Suffice to say, however, that all of the action, the class in of itself, is held within the `script OCDictionary...end script` block within the `MakeDictionary()` subroutine.
+
+*Unicode Key Support*
+
+Applescript's text class supports Unicode, moving from ASCII a while ago. Unicode is much broader in scope over ASCII, but `OCDictionary` still checks to be sure that keys are built using an ASCII-centric character set. The currently supported characters include Unicode value 48 (`'0'`) contiguously through 122 (`'z'`) shown in order here:
+
+    0123456789:'<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
+    
+This limitation is based on `OCDictionary's` current iteration requiring each node in the hash table hold an array aligned with the numerical value of each character regardless if the array is populated. Supporting the full Unicode set would consume far too much memory even for the shallowest of tables, so sticking with characters 48 through 122 maintains a manageable but still useful character set.
 
 *Convenience Methods*
 
 Script objects cannot instantiate themselves as in Cocoa, a single function is provided to kick things off, but convenience methods are trivial to create:
+
 ```
 on MakeDictionaryWithValuesAndKeys(someValues, someKeys) -- (list, list) as OCDictionary
   set newDictionary to MakeDictionary() of me
@@ -59,6 +64,7 @@ end MakeDictionaryWithValuesAndKeys
 -- simply call with:
 -- set newDictionary to MakeDictionaryWithValuesAndKeys({"ack", "greeble", "ponies"}, {"ACK", "GREEBLE", "PONIES"}) of me
 ```
+
 **`run{}`**
 
 This subroutine offers examples of syntax and functionality. This combined with the MakeDictionary() subroutine makes for a fully working script.
