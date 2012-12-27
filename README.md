@@ -12,14 +12,12 @@ The `record` class in Applescript is, at its core, a dictionary—a key-value pa
 * Records are not dynamic except for changing values for keys. There is no way to add or remove key-value pairs.
 * There is no way to iterate through keys or values. Functions like length and count give the number of records, but then there is no ability to call values by index.
 
-`OCDictionary` addresses most of this with a simple-to-use, yet entirely Applescript-native code. There is no need to take on the weight of an ApplescriptObjC application with Xcode's bare bones debugging tools to gain access to `NSDictionary` and `NSMutableDictionary` classes, and instead keep working with more developer-friendly tools like Script Debugger.
+`ASDictionary` addresses most of this with a simple-to-use, yet entirely Applescript-native code. There is no need to take on the weight of an ApplescriptObjC application with Xcode's bare bones debugging tools to gain access to `NSDictionary` and `NSMutableDictionary` classes, and instead keep working with more developer-friendly tools like Script Debugger.
 
 **Possible future plans**
 
-Right now, the accessor methods only go by the key and not the value, but that can easily be added. I would like to see more of the functionality that I get in REALbasic and Cocoa's NSDictionary class.
-In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa and REALbasic, but the short list includes the following:
+In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary` class and REALbasic's `Dictionary` class, but the short list includes the following:
 
-* Access values by index
 * string value/description for text output
 * Better error reporting. Right now, it only uses `missing value`, which isn't very informative as a few things can go wrong but at least it is Applescript-native. I had errors in the previous iteration but I just didn't like how they were handled.
 * Hash table management could use a bit of optimizing, particularly as it creates wholly empty lists that never get used during runtime, but it is fast (for Applescript) and it works.
@@ -29,7 +27,11 @@ Documentation
 
 **Introduction**
 
-Essentially, the class is a wrapper for a private list of `records` with the format `{key:data, value:data}`. When a key value pair is created, the pair is placed at the end of a `list` and the index recorded in the hash table by the key. Retrieving values is nothing more than seeing if each character has a place in the hash table, getting the index on the last character, and returning the value for that pair. When in doubt about anything, the dictionary returns *`missing value`*.
+Essentially, `ASDictionary` is a wrapper for two private lists of keys and values and maintains parity between them. In other words, the key placed at index *n* of the keys list is matched to the value at place *n* in the values list. When a key value pair is created, the pair components are placed at the end of their respective `list` and the index recorded in the hash table by the key.
+
+*The keys list rules all when checking for parity and data integrity.* If the keys list is shorter than the values list, then values will be lost unless the developer maintains a count of values placed.
+
+Retrieving values is nothing more than seeing if each character for a given key has a place in the hash table, getting the index on the last character, and returning the value for that pair. When in doubt about anything, the dictionary returns *`missing value`*.
 
 **Caveats**
 
@@ -37,22 +39,22 @@ Essentially, the class is a wrapper for a private list of `records` with the for
 
 This uses the `Script Object` features of Applescript, which allows custom OOP in Applescript complete with inheritance. The caveat is that doing this can be very resource and memory intensive.
 
-If you are not familiar with `Script Objects`, then I highly suggest you read the Applescript Language Guide. Suffice to say, however, that all of the action, the class in of itself, is held within the `script OCDictionary...end script` block within the `MakeDictionary()` subroutine.
+If you are not familiar with `Script Objects`, then I highly suggest you read the Applescript Language Guide. Suffice to say, however, that all of the action, the class in of itself, is held within the `script ASDictionary...end script` block within the `MakeDictionary()` subroutine.
 
 *Unicode Key Support*
 
-Applescript's text class supports Unicode, moving from ASCII a while ago. Unicode is much broader in scope over ASCII, but `OCDictionary` still checks to be sure that keys are built using an ASCII-centric character set. The currently supported characters include Unicode value 48 (`'0'`) contiguously through 122 (`'z'`) shown in order here:
+Applescript's text class supports Unicode, moving from ASCII a while ago. Unicode is much broader in scope over ASCII, but `ASDictionary` still checks to be sure that keys are built using an ASCII-centric character set. The currently supported characters include Unicode value 48 (`'0'`) contiguously through 122 (`'z'`) shown in order here:
 
     0123456789:'<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
 
-This limitation is based on `OCDictionary's` current iteration requiring each node in the hash table hold an array aligned with the numerical value of each character regardless if the array is populated. Supporting the full Unicode set would consume far too much memory even for the shallowest of tables, so sticking with characters 48 through 122 maintains a manageable but still useful character set.
+This limitation is based on `ASDictionary's` current iteration requiring each node in the hash table hold an array aligned with the numerical value of each character regardless if the array is populated. Supporting the full Unicode set would consume far too much memory even for the shallowest of tables, so sticking with characters 48 through 122 maintains a manageable but still useful character set.
 
 *Convenience Methods*
 
 Script objects cannot instantiate themselves as in Cocoa, a single function is provided to kick things off, but convenience methods are trivial to create:
 
 ```
-on MakeDictionaryWithValuesAndKeys(someValues, someKeys) -- (list, list) as OCDictionary
+on MakeDictionaryWithValuesAndKeys(someValues, someKeys) -- (list, list) as ASDictionary
   set newDictionary to MakeDictionary() of me
 	tell newDictionary
 		set valuesAdded to addValuesForKeys(someValues, someKeys)
@@ -68,9 +70,9 @@ end MakeDictionaryWithValuesAndKeys
 
 This subroutine offers examples of syntax and functionality. This combined with the MakeDictionary() subroutine makes for a fully working script.
 
-**`MakeDictionary() -- as OCDictionary`**
+**`MakeDictionary() -- as ASDictionary`**
 
-If Script Objects are to be used, they need to be declared and returned, and that is all this subroutine does. This contains the entire OCDictionary declaration, so just copy and paste into your script and call with the simple
+If Script Objects are to be used, they need to be declared and returned, and that is all this subroutine does. This contains the entire ASDictionary declaration, so just copy and paste into your script and call with the simple
 set testDictionary to MakeDictionary() of me
 
 **`hasKey(aKey) -- (object) as boolean`**
@@ -92,6 +94,10 @@ False can be returned if data integrity checking is enabled and either the key o
 **`valueForKey(aKey) -- (object) as object or (missing value)`**
 
 This returns the given value for a key. If it cannot find a value for that key because the key does not exist or some other error, it returns missing value.
+
+**`valueForIndex(anIndex) -- (integer) as object or (missing value)`**
+
+Returns the value for a given index. If the index is out of the bounds of the keys array, then it returns missing value. Else, it returns whatever is contained at the index of the values array.
 
 **`addValuesForKeys(someValues, someKeys) -- (list, list) -- as boolean`**
 

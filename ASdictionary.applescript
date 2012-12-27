@@ -18,6 +18,7 @@ Change History:
     						Updated methods to handle separate lists for keys and values
     12_12_27_01_02_000: Added valueForIndex() subroutine
     						Added burn test for valueForIndex()
+    12_12_27_01_02_001:	Updated valueForIndex() to handle list indexes that are ≤ 1.
 *)
 
 on run {}
@@ -181,7 +182,7 @@ on MakeDictionary() -- as ASDictionary
 			set keysCount to count __keys
 			
 			-- we do not make any assumptions about how they got their index, so we simply check
-			if anIndex > keysCount then
+			if (anIndex < 1) or (anIndex > keysCount) then
 				return missing value
 			end if
 			
