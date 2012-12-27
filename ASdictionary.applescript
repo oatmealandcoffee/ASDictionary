@@ -5,6 +5,10 @@ License: Copyright 2012 Philip Regan, http://www.oatmealandcoffee.com
 Source:	New source only; no adaptations.
 Requirements: None
 Notes:
+
+Maintaining and checking key-value parity:
+Since keys and values are stored separatly, we have to occasionally check for parity between the two lists in case of unintended or uncontrollable errors when setting values.  Since we cannot access values directly by the values themselves, we use the keys as the benchmark for checking parity. Obviously, this is a problem if the __values list is shorter than the __keys list, but we have to start somewhere. There is the dictionaryIntegrityCheck() subroutine, but this can be overkill especially when methods are expected to be fast.
+
 Change History:
     12_12_10_01_00_000: Started public source
     12_12_10_01_00_001: Changed remaining mentions of kASDictionary_ValueNotFound to missing value
@@ -12,6 +16,8 @@ Change History:
     12_12_27_01_01_000:	Removed key-value records
     						Added separate lists for keys and values. This optimizes the returning of stored keys to simply returning the internal property as opposed to iterating through all records to get the keys
     						Updated methods to handle separate lists for keys and values
+    12_12_27_01_02_000: Added valueForIndex() subroutine
+    						Added burn test for valueForIndex()
 *)
 
 on run {}
@@ -55,7 +61,8 @@ on run {}
 		repeat with k from 1 to lastKey
 			set theKey to item k of theKeys
 			set theValue to valueForKey(theKey)
-			log {theKey, theValue}
+			set theValueByIndex to valueForIndex(k)
+			log {theKey, theValue, theValueByIndex}
 		end repeat
 		
 		(* Operations That Will Cause Errors *)
@@ -168,6 +175,19 @@ on MakeDictionary() -- as ASDictionary
 			return item keyValueIndex of __values
 			
 		end valueForKey
+		
+		to valueForIndex(anIndex) -- (integer) as object or (missing value)
+			
+			set keysCount to count __keys
+			
+			-- we do not make any assumptions about how they got their index, so we simply check
+			if anIndex > keysCount then
+				return missing value
+			end if
+			
+			return item anIndex of __values
+			
+		end valueForIndex
 		
 		to addValuesForKeys(someValues, someKeys) -- (list, list) -- as boolean
 			
