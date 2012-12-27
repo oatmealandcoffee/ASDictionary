@@ -20,11 +20,9 @@ Right now, the accessor methods only go by the key and not the value, but that c
 In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa and REALbasic, but the short list includes the following:
 
 * Access values by index
-* Remove key-value pairs, in part or all
 * string value/description for text output
-* seperate keys and values to seperate lists to speed up the `getKeys()` subroutine
-* Better error reporting. Right now, it only uses missing value, but that isn't very informative as a few things can go wrong. I had errors in the previous iteration but they weren't handled very well.
-* Hash table management could use a bit of optimizing, but it is fast (for Applescript) and it works.
+* Better error reporting. Right now, it only uses `missing value`, which isn't very informative as a few things can go wrong but at least it is Applescript-native. I had errors in the previous iteration but I just didn't like how they were handled.
+* Hash table management could use a bit of optimizing, particularly as it creates wholly empty lists that never get used during runtime, but it is fast (for Applescript) and it works.
 
 Documentation
 =============
@@ -46,7 +44,7 @@ If you are not familiar with `Script Objects`, then I highly suggest you read th
 Applescript's text class supports Unicode, moving from ASCII a while ago. Unicode is much broader in scope over ASCII, but `OCDictionary` still checks to be sure that keys are built using an ASCII-centric character set. The currently supported characters include Unicode value 48 (`'0'`) contiguously through 122 (`'z'`) shown in order here:
 
     0123456789:'<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
-    
+
 This limitation is based on `OCDictionary's` current iteration requiring each node in the hash table hold an array aligned with the numerical value of each character regardless if the array is populated. Supporting the full Unicode set would consume far too much memory even for the shallowest of tables, so sticking with characters 48 through 122 maintains a manageable but still useful character set.
 
 *Convenience Methods*

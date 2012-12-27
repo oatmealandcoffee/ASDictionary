@@ -9,6 +9,9 @@ Change History:
     12_12_10_01_00_000: Started public source
     12_12_10_01_00_001: Changed remaining mentions of kASDictionary_ValueNotFound to missing value
     						Added header comments
+    12_12_27_01_01_000:	Removed key-value records
+    						Added separate lists for keys and values. This optimizes the returning of stored keys to simply returning the internal property as opposed to iterating through all records to get the keys
+    						Updated methods to handle separate lists for keys and values
 *)
 
 on run {}
@@ -96,7 +99,8 @@ on MakeDictionary() -- as ASDictionary
 		
 		(* Private properties *)
 		
-		property __keyValuePairs : {}
+		property __keys : {}
+		property __values : {}
 		
 		property __checkDataIntegrity : true
 		
@@ -123,21 +127,8 @@ on MakeDictionary() -- as ASDictionary
 		end toggleDataIntegrityChecks
 		
 		to getKeys() -- as list
-			set keyList to {}
-			
-			set keyValuePairCount to (count __keyValuePairs)
-			
-			if keyValuePairCount = 0 then
-				return keyList
-			end if
-			
-			repeat with thisKeyValuePair from 1 to keyValuePairCount
-				set theKeyValuePair to item thisKeyValuePair of __keyValuePairs
-				set theKey to key of theKeyValuePair
-				set end of keyList to theKey
-			end repeat
-			
-			return keyList
+			-- keys are in a list seperate from the values so we need only return the list
+			return __keys
 		end getKeys
 		
 		to setValueForKey(aValue, aKey) -- (object, object) as boolean
@@ -151,21 +142,22 @@ on MakeDictionary() -- as ASDictionary
 			set keyValueIndex to __getIndexForKey(aKey) of me
 			
 			if keyValueIndex is missing value then
-				set newKeyValuePair to __makeKeyValuePairWithKeyAndValue(aKey, aValue) of me
-				set end of __keyValuePairs to newKeyValuePair
 				
-				set keyValuePairsCount to count __keyValuePairs
+				set end of __values to aValue
+				set end of __keys to aKey
+				
+				set keyValuePairsCount to count __keys
 				my __setKeyAndIndexToHash(aKey, keyValuePairsCount)
 			else
-				set theKeyValuePair to item keyValueIndex of __keyValuePairs
-				set value of theKeyValuePair to aValue
+				
+				set item keyValueIndex of __values to aValue
 			end if
 			
 			return true
 			
 		end setValueForKey
 		
-		to valueForKey(aKey) -- (object) as object or (mising value)
+		to valueForKey(aKey) -- (object) as object or (missing value)
 			
 			set keyValueIndex to __getIndexForKey(aKey) of me
 			
@@ -173,10 +165,8 @@ on MakeDictionary() -- as ASDictionary
 				return missing value
 			end if
 			
-			set theKeyValuePair to item keyValueIndex of __keyValuePairs
-			set theValue to value of theKeyValuePair
+			return item keyValueIndex of __values
 			
-			return theValue
 		end valueForKey
 		
 		to addValuesForKeys(someValues, someKeys) -- (list, list) -- as boolean
@@ -210,15 +200,31 @@ on MakeDictionary() -- as ASDictionary
 			
 			set dictionaryIsClean to true
 			
-			set keyValuePairCount to (count __keyValuePairs)
-			if keyValuePairCount = 0 then return (dictionaryIsClean = true)
+			set keysCount to count __keys
+			set valuesCount to count __values
 			
+			-- there is nothing in the key-value lists to check, and that is as clean as it can get
+			if (keysCount = 0 and valuesCount = 0) then
+				return dictionaryIsClean
+			end if
 			
-			repeat with thisKeyValuePair from 1 to keyValuePairCount
+			if (keysCount is not equal to valuesCount) then
+				set dictionaryIsClean to false
+				if (verboseFlag) then
+					log "ASDictionary ERROR: The number of keys does not equal the number of values. {keys:" & keysCount & ", values:" & valuesCount & "}"
+				end if
+				-- we still want to check the key-value pairs, but we need to work around any OutOfBounds errors
+				if (valuesCount < keysCount) then
+					set keysCount to valuesCount
+				end if
+			end if
+			
+			repeat with thisKey from 1 to keysCount
+				(* DEPRECATED
 				set theKeyValuePair to item thisKeyValuePair of __keyValuePairs
-				
-				set theKey to key of theKeyValuePair
-				set theValue to value of theKeyValuePair
+				*)
+				set theKey to item thisKey of __keys
+				set theValue to item thisKey of __values
 				
 				set theKeyPassed to __dataIntegrityCheck(theKey)
 				set theValuePassed to __dataIntegrityCheck(theValue)
@@ -227,20 +233,8 @@ on MakeDictionary() -- as ASDictionary
 					set dictionaryIsClean to false
 					
 					if verboseFlag then
-						set recordErrors to {}
 						
-						set end of recordErrors to "__keyValuePair(" & thisKeyValuePair & ")"
-						set end of recordErrors to theKeyValuePair
-						
-						if not theKeyPassed then
-							set end of recordErrors to "key is null or is an empty list"
-						end if
-						
-						if not theValuePassed then
-							set end of recordErrors to "value is null or is an empty list"
-						end if
-						
-						log recordErrors
+						log ("ASDictionary ERROR: A key-value pair had an error: index: " & thisKey & ", key:" & theKey as string) & ", value:" & theValue as string
 						
 					end if
 				end if
@@ -257,7 +251,7 @@ on MakeDictionary() -- as ASDictionary
 		to __dataIntegrityCheck(newData) -- (object) as boolean
 			(* This offers only very basic checks: null or empty lists *)
 			
-			if newData = null then
+			if newData = null or newData = missing value then
 				return false
 			end if
 			
@@ -379,12 +373,6 @@ on MakeDictionary() -- as ASDictionary
 			return val
 			
 		end __chrToHashIndex
-		
-		to __makeKeyValuePairWithKeyAndValue(aKey, aValue) -- (object, object) as record
-			(* Factory method for key-value pair records *)
-			set keyValuePair to {key:aKey, value:aValue}
-			return keyValuePair
-		end __makeKeyValuePairWithKeyAndValue
 		
 	end script
 	
