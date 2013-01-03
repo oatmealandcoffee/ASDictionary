@@ -14,9 +14,10 @@ The `record` class in Applescript is, at its core, a dictionary—a key-value pa
 
 `ASDictionary` addresses most of this with a simple-to-use, yet entirely Applescript-native code. There is no need to take on the weight of an ApplescriptObjC application with Xcode's bare bones debugging tools to gain access to `NSDictionary` and `NSMutableDictionary` classes, and instead keep working with more developer-friendly tools like Script Debugger.
 
-**Road map**
+Road Map
+========
 
-In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary`/`NSMutableDictionary` classes and REALbasic's `Dictionary` class, but the short, hard-defined follows. 
+In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary`/`NSMutableDictionary` classes and REALbasic's `Dictionary` class, but the short, hard-defined list follows. 
 
 **N.B.:** The following list is not given in any particular priority, but is rather organized simply by idea source. Actual functions may vary as needed.
 
