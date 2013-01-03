@@ -18,7 +18,7 @@ Change History:
     						Updated methods to handle separate lists for keys and values
     12_12_27_01_02_000: Added valueForIndex() subroutine
     						Added burn test for valueForIndex()
-    12_12_27_01_02_001:	Updated valueForIndex() to handle list indexes that are â‰¤ 1.
+    12_12_27_01_02_001:	Updated valueForIndex() to handle list indexes that are ² 1.
 *)
 
 on run {}
@@ -387,7 +387,7 @@ on MakeDictionary() -- as ASDictionary
 			-- get the unicode value of the character
 			set val to ((id of chr) - __val_0)
 			
-			if val â‰¥ __unsupported_chr or val â‰¤ 1 then
+			if val ³ __unsupported_chr or val ² 1 then
 				set val to __unsupported_chr
 			end if
 			

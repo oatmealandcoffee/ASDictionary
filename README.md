@@ -14,13 +14,34 @@ The `record` class in Applescript is, at its core, a dictionary—a key-value pa
 
 `ASDictionary` addresses most of this with a simple-to-use, yet entirely Applescript-native code. There is no need to take on the weight of an ApplescriptObjC application with Xcode's bare bones debugging tools to gain access to `NSDictionary` and `NSMutableDictionary` classes, and instead keep working with more developer-friendly tools like Script Debugger.
 
-**Possible future plans**
+**Road map**
 
-In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary` class and REALbasic's `Dictionary` class, but the short list includes the following:
+In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary`/`NSMutableDictionary` classes and REALbasic's `Dictionary` class, but the short, hard-defined follows. 
 
-* string value/description for text output
-* Better error reporting. Right now, it only uses `missing value`, which isn't very informative as a few things can go wrong but at least it is Applescript-native. I had errors in the previous iteration but I just didn't like how they were handled.
-* Hash table management could use a bit of optimizing, particularly as it creates wholly empty lists that never get used during runtime, but it is fast (for Applescript) and it works.
+**N.B.:** The following list is not given in any particular priority, but is rather organized simply by idea source. Actual functions may vary as needed.
+
+* From `NSDictionary`
+	* `description() -- (void) as string`
+		* Provides a string in the list format of all keys and values for the dictionary
+	* `values() -- (void) as list`
+		* returns the values list
+	* `keysSorted() -- (void) as list`
+		* returns the list of keys sorted; uses merge sort based on Unicode
+* From `NSMutableDictionary`
+	* `addEntriesFromDictionary(dictionary) -- (ASDictionary) as void`
+		* accepts a dictionary for population; duplicate keys are overwritten
+	* `removeObjectForKey(key) -- (string) as void`
+		* removes the key-value pair for that key; leaves the list intact with 'missing value'
+	* `removeObjectsForKeys(keys) -- (list) as void`
+		* removes the key-value pairs for a list of keys; leaves the list intact with *'missing value'*
+	* `removeAllObjects() -- (void) as void`
+		* removes all key-value pairs and resets the key hash; the nuclear option
+* From personal work
+	* `reindex() -- (void) as void`
+		* optimization that removes empty values from the `__keys` and `__values` lists and creates a new key hash; gives the developer a way to save memory during runtime
+* Still-nebulous features
+	* *Better error reporting.* Right now, it only uses `missing value`, which isn't very informative as a few things can go wrong but at least it is Applescript-native. I had errors in the previous iteration but I just didn't like how they were handled.
+	* *Optimize hash table management*, particularly as it creates wholly empty lists that never get used during runtime, but it is fast (for Applescript) and it works.
 
 Documentation
 =============
