@@ -17,17 +17,13 @@ The `record` class in Applescript is, at its core, a dictionary—a key-value pa
 Road Map
 ========
 
-In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary`/`NSMutableDictionary` classes and REALbasic's `Dictionary` class, but the short, hard-defined list follows. 
+In general, I would like to align functionality with mutable dictionary classes like I see in Cocoa's `NSDictionary`/`NSMutableDictionary` classes and REALbasic's `Dictionary` class, but the short, hard-defined list follows.
 
 **N.B.:** The following list is not given in any particular priority, but is rather organized simply by idea source. Actual functions may vary as needed.
 
 * From `NSDictionary`
 	* `description() -- (void) as string`
 		* Provides a string in the list format of all keys and values for the dictionary
-	* `values() -- (void) as list`
-		* returns the values list
-	* `keysSorted() -- (void) as list`
-		* returns the list of keys sorted; uses merge sort based on Unicode
 * From `NSMutableDictionary`
 	* `addEntriesFromDictionary(dictionary) -- (ASDictionary) as void`
 		* accepts a dictionary for population; duplicate keys are overwritten

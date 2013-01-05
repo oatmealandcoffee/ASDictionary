@@ -18,88 +18,13 @@ Change History:
     						Updated methods to handle separate lists for keys and values
     12_12_27_01_02_000: Added valueForIndex() subroutine
     						Added burn test for valueForIndex()
-    12_12_27_01_02_001:	Updated valueForIndex() to handle list indexes that are ² 1.
+    12_12_27_01_02_001:	Updated valueForIndex() to handle list indexes that are â‰¤ 1.
+    13_01_05_01_02_002:	Switched order of run{} and MakeDictionary() subroutines to make it easier to find actual class
+    						Added getValues() subroutine
+    						Added getKeysSorted() subroutine
+    						Added mergeSort() subroutine
+    						Added burn tests for getValues() and getKeysSorted()
 *)
-
-on run {}
-	
-	set testDictionary to MakeDictionary() of me
-	
-	tell testDictionary
-		
-		(* Basic Operations *)
-		
-		(* Add a value and Key *)
-		
-		log "setValueForKey(oop, OOP)"
-		set valueForKeySet to setValueForKey("oop", "OOP")
-		log valueForKeySet
-		
-		(* Add a list of values and keys *)
-		
-		log "addValuesForKeys({ack, greeble, ponies}, {ACK, GREEBLE, PONIES})"
-		set valuesAddedForKeys to addValuesForKeys({"ack", "greeble", "ponies"}, {"ACK", "GREEBLE", "PONIES"})
-		log valuesAddedForKeys
-		
-		(* Get and set values for keys *)
-		
-		log "setValueForKey(\"Luc Teyssier\", OOP)"
-		set valueSetForKey to setValueForKey("Luc Teyssier", "OOP")
-		log valueSetForKey
-		
-		log "set myValueForKey to valueForKey(OOP)"
-		set myValueForKey to valueForKey("OOP")
-		log myValueForKey
-		
-		(* Get all of the keys and iterate through the pairs *)
-		
-		log "set theKeys to getKeys()"
-		set theKeys to getKeys()
-		log theKeys
-		
-		log "iterate through all keys"
-		set lastKey to (count theKeys)
-		repeat with k from 1 to lastKey
-			set theKey to item k of theKeys
-			set theValue to valueForKey(theKey)
-			set theValueByIndex to valueForIndex(k)
-			log {theKey, theValue, theValueByIndex}
-		end repeat
-		
-		(* Operations That Will Cause Errors *)
-		
-		log "toggleDataIntegrityChecks()"
-		log toggleDataIntegrityChecks()
-		
-		log "setValueForKey(emptyValueList, emptyKeyList)"
-		log setValueForKey({}, {})
-		-- nothing should be added to keys or values, 
-		-- but since we turned off data integrity checks, 
-		-- we get it added but the report catches it
-		
-		log "addValuesForKeys(unmatchedValueList, unmatchedKeyList)"
-		log addValuesForKeys({"Kate", "Charlie"}, {"Jean-Paul Cardon", "Bob", "Juliette", "Concierge"})
-		-- we should see errors in the log and nothing added
-		
-		log "keyFound to hasKey(supercalifrajilisticexpialidocious)"
-		set keyFound to hasKey("supercalifrajilisticexpialidocious")
-		log keyFound
-		-- we should get back a false here
-		
-		log "set theValueForKey to valueForKey(supercalifrajilisticexpialidocious)"
-		set theValueForKey to valueForKey("supercalifrajilisticexpialidocious")
-		log theValueForKey
-		-- we should get back missing value here
-		
-		(* Check to make sure our data is clean so we don't mess up operations later *)
-		
-		log "set dictionaryIsSafe to dictionaryIntegrityCheck(true)"
-		set dictionaryIsSafe to dictionaryIntegrityCheck(true)
-		log dictionaryIsSafe
-		
-	end tell
-	
-end run
 
 on MakeDictionary() -- as ASDictionary
 	
@@ -134,10 +59,20 @@ on MakeDictionary() -- as ASDictionary
 			return __checkDataIntegrity
 		end toggleDataIntegrityChecks
 		
-		to getKeys() -- as list
+		to getKeys() -- (void) as list
 			-- keys are in a list seperate from the values so we need only return the list
 			return __keys
 		end getKeys
+		
+		on getKeysSorted() -- (void) as list
+			set theKeys to getKeys() of me
+			set theKeys to mergeSort(theKeys) of me
+			return theKeys
+		end getKeysSorted
+		
+		to getValues() -- (void) as list
+			return __values
+		end getValues
 		
 		to setValueForKey(aValue, aKey) -- (object, object) as boolean
 			
@@ -387,7 +322,7 @@ on MakeDictionary() -- as ASDictionary
 			-- get the unicode value of the character
 			set val to ((id of chr) - __val_0)
 			
-			if val ³ __unsupported_chr or val ² 1 then
+			if val â‰¥ __unsupported_chr or val â‰¤ 1 then
 				set val to __unsupported_chr
 			end if
 			
@@ -395,8 +330,154 @@ on MakeDictionary() -- as ASDictionary
 			
 		end __chrToHashIndex
 		
+		(*
+			Sort Stack
+			Credit: http://www.mailinglistarchive.com/applescript-users@lists.apple.com/msg02255.html
+		*)
+		
+		on mergeSort(m)
+			set n to length of m
+			if n â‰¤ 1 then -- less than or equal to
+				return m
+			else
+				set firstList to {}
+				set secondList to {}
+				set middleIndex to n div 2
+				repeat with x from 1 to middleIndex
+					copy item x of m to end of firstList
+				end repeat
+				repeat with x from middleIndex + 1 to n
+					copy item x of m to end of secondList
+				end repeat
+				set firstList to my mergeSort(firstList)
+				set secondList to my mergeSort(secondList)
+				set resultList to my merge(firstList, secondList)
+				return resultList
+			end if
+		end mergeSort
+		
+		on merge(leftList, rightList)
+			set resultList to {}
+			repeat while length of leftList > 0 and length of rightList > 0
+				set a to first item of leftList
+				set b to first item of rightList
+				if a â‰¤ b then -- less than or equal to
+					copy a to end of resultList
+					set leftList to rest of leftList
+				else
+					copy b to end of resultList
+					set rightList to rest of rightList
+				end if
+			end repeat
+			if length of leftList > 0 then
+				repeat with x in leftList
+					copy contents of x to end of resultList
+				end repeat
+			end if
+			if length of rightList > 0 then
+				repeat with x in rightList
+					copy contents of x to end of resultList
+				end repeat
+			end if
+			return resultList
+		end merge
+		
 	end script
 	
 	return ASDictionary
 	
 end MakeDictionary
+
+(*
+	Burn Tests
+*)
+
+on run {}
+	
+	set testDictionary to MakeDictionary() of me
+	
+	tell testDictionary
+		
+		(* Basic Operations *)
+		
+		(* Add a value and Key *)
+		
+		log "setValueForKey(oop, OOP)"
+		set valueForKeySet to setValueForKey("oop", "OOP")
+		log valueForKeySet
+		
+		(* Add a list of values and keys *)
+		
+		log "addValuesForKeys({ack, greeble, ponies}, {ACK, GREEBLE, PONIES})"
+		set valuesAddedForKeys to addValuesForKeys({"ack", "greeble", "ponies"}, {"ACK", "GREEBLE", "PONIES"})
+		log valuesAddedForKeys
+		
+		(* Get and set values for keys *)
+		
+		log "setValueForKey(\"Luc Teyssier\", OOP)"
+		set valueSetForKey to setValueForKey("Luc Teyssier", "OOP")
+		log valueSetForKey
+		
+		log "set myValueForKey to valueForKey(OOP)"
+		set myValueForKey to valueForKey("OOP")
+		log myValueForKey
+		
+		(* Get all of the keys and iterate through the pairs *)
+		
+		log "set theKeys to getKeys()"
+		set theKeys to getKeys()
+		log theKeys
+		
+		log "set theKeysSorted to getKeysSorted()"
+		set theKeysSorted to getKeysSorted()
+		log theKeysSorted
+		
+		log "set theValues to getValues()"
+		set theValues to getValues()
+		log theValues
+		
+		log "iterate through all keys"
+		set lastKey to (count theKeys)
+		repeat with k from 1 to lastKey
+			set theKey to item k of theKeys
+			set theValue to valueForKey(theKey)
+			set theValueByIndex to valueForIndex(k)
+			log {theKey, theValue, theValueByIndex}
+		end repeat
+		
+		(* Operations That Will Cause Errors *)
+		
+		log "toggleDataIntegrityChecks()"
+		log toggleDataIntegrityChecks()
+		
+		log "setValueForKey(emptyValueList, emptyKeyList)"
+		log setValueForKey({}, {})
+		-- nothing should be added to keys or values, 
+		-- but since we turned off data integrity checks, 
+		-- we get it added but the report catches it
+		
+		log "addValuesForKeys(unmatchedValueList, unmatchedKeyList)"
+		log addValuesForKeys({"Kate", "Charlie"}, {"Jean-Paul Cardon", "Bob", "Juliette", "Concierge"})
+		-- we should see errors in the log and nothing added
+		
+		log "keyFound to hasKey(supercalifrajilisticexpialidocious)"
+		set keyFound to hasKey("supercalifrajilisticexpialidocious")
+		log keyFound
+		-- we should get back a false here
+		
+		log "set theValueForKey to valueForKey(supercalifrajilisticexpialidocious)"
+		set theValueForKey to valueForKey("supercalifrajilisticexpialidocious")
+		log theValueForKey
+		-- we should get back missing value here
+		
+		(* Check to make sure our data is clean so we don't mess up operations later *)
+		
+		log "set dictionaryIsSafe to dictionaryIntegrityCheck(true)"
+		set dictionaryIsSafe to dictionaryIntegrityCheck(true)
+		log dictionaryIsSafe
+		
+	end tell
+	
+end run
+
+
