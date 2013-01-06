@@ -27,10 +27,6 @@ In general, I would like to align functionality with mutable dictionary classes 
 * From `NSMutableDictionary`
 	* `addEntriesFromDictionary(dictionary) -- (ASDictionary) as void`
 		* accepts a dictionary for population; duplicate keys are overwritten
-	* `removeObjectForKey(key) -- (string) as void`
-		* removes the key-value pair for that key; leaves the list intact with 'missing value'
-	* `removeObjectsForKeys(keys) -- (list) as void`
-		* removes the key-value pairs for a list of keys; leaves the list intact with *'missing value'*
 	* `removeAllObjects() -- (void) as void`
 		* removes all key-value pairs and resets the key hash; the nuclear option
 * From personal work
@@ -120,6 +116,14 @@ Returns the value for a given index. If the index is out of the bounds of the ke
 **`addValuesForKeys(someValues, someKeys) -- (list, list) -- as boolean`**
 
 This allows the addition of multiple keys and values as lists. If data integrity checking is on, then the subroutine checks to make sure there are no empty lists and that they have a one-to-one relationship with each other (i.e., both list lengths are the same. The order of both is entirely up to you). Any error along those lines returns false and nothing is added to the dictionary. If data integrity is off, the lists are added "as is" and can result in missing value values in the dictionary.
+
+**`removeValueForKey(aKey) -- (string) as void`**
+
+Replace the key-value pair in their respective lists with missing value. This also deletes the index in the hash, though the letters that made up the key are still in place.
+
+**`removeValuesForKeys(keys) -- (list) as void`**
+
+Allows the removal of multiple keys and values as lists.
 
 **`dictionaryIntegrityCheck(verboseFlag) -- (boolean) as boolean`**
 

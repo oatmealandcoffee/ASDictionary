@@ -25,6 +25,8 @@ Change History:
     						Added mergeSort() subroutine
     						Added burn tests for getValues() and getKeysSorted()
     13_01_05_01_02_003: Added "Big" data burn tests to check speed
+    13_01_05_01_03_000:	Added removeValueForKey() and removeValuesForKeys(), making this class mutable
+    						Added burn tests for removeValueForKey() and removeValuesForKeys()
 *)
 
 on MakeDictionary() -- as ASDictionary
@@ -100,6 +102,47 @@ on MakeDictionary() -- as ASDictionary
 			return true
 			
 		end setValueForKey
+		
+		to removeValueForKey(aKey) -- (string) as void
+			
+			-- check if there is a value for the key
+			set theIndex to __getIndexForKey(aKey)
+			if theIndex = missing value then
+				return
+			end if
+			
+			-- if there is a value, replace that item in values with missing value
+			set item theIndex of __values to missing value
+			set item theIndex of __keys to missing value
+			
+			-- and replace the key in keys with missing value
+			-- go to node in the hash and remove the index of the key-value pair
+			
+			set lastChr to (count aKey)
+			set currentNode to __keyIndexHash of me
+			
+			repeat with chr from 1 to lastChr
+				set nodeIdx to __chrToHashIndex(item chr of aKey) of me
+				set currentNode to __getGlyphInNode(currentNode, nodeIdx)
+				if currentNode is missing value then
+					-- something bad happened that shouldn't have
+					return
+				end if
+				-- we are where the index is located, so we clear the index so it cannot be found again as being valid
+				if chr = lastChr then
+					set index of currentNode to missing value
+				end if
+			end repeat
+			
+		end removeValueForKey
+		
+		to removeValuesForKeys(keys) -- (list) as void
+			set lastKey to (count keys)
+			repeat with thisKey from 1 to lastKey
+				set theKey to item thisKey of keys
+				my removeValueForKey(theKey)
+			end repeat
+		end removeValuesForKeys
 		
 		to valueForKey(aKey) -- (object) as object or (missing value)
 			
@@ -293,7 +336,7 @@ on MakeDictionary() -- as ASDictionary
 			
 		end __setKeyAndIndexToHash
 		
-		-- takes a key and returns the index if it exists for that key, else returns 0
+		-- takes a key and returns the index if it exists for that key, else returns missing value
 		on __getIndexForKey(key) -- (string) as int or missing value
 			
 			if (count __keyIndexHash) = 0 then
@@ -443,6 +486,11 @@ on run {}
 			set theValue to valueForKey(theKey)
 			set theValueByIndex to valueForIndex(k)
 			log {theKey, theValue, theValueByIndex}
+		end repeat
+		
+		log "remove the key-value pairs"
+		repeat with k from 1 to lastKey
+			removeValueForKey(item k of theKeys)
 		end repeat
 		
 		(* Operations That Will Cause Errors *)
