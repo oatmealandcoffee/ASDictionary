@@ -144,6 +144,12 @@ on MakeDictionary() -- as ASDictionary
 			end repeat
 		end removeValuesForKeys
 		
+		to removeAllValues() -- (void) as void)
+			set __keys to {}
+			set __values to {}
+			set __keyIndexHash to {}
+		end removeAllValues
+		
 		to valueForKey(aKey) -- (object) as object or (missing value)
 			
 			set keyValueIndex to __getIndexForKey(aKey) of me

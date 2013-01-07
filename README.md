@@ -27,8 +27,6 @@ In general, I would like to align functionality with mutable dictionary classes 
 * From `NSMutableDictionary`
 	* `addEntriesFromDictionary(dictionary) -- (ASDictionary) as void`
 		* accepts a dictionary for population; duplicate keys are overwritten
-	* `removeAllObjects() -- (void) as void`
-		* removes all key-value pairs and resets the key hash; the nuclear option
 * From personal work
 	* `reindex() -- (void) as void`
 		* optimization that removes empty values from the `__keys` and `__values` lists and creates a new key hash; gives the developer a way to save memory during runtime
