@@ -9,6 +9,14 @@ Notes:
 Maintaining and checking key-value parity:
 Since keys and values are stored separatly, we have to occasionally check for parity between the two lists in case of unintended or uncontrollable errors when setting values.  Since we cannot access values directly by the values themselves, we use the keys as the benchmark for checking parity. Obviously, this is a problem if the __values list is shorter than the __keys list, but we have to start somewhere. There is the dictionaryIntegrityCheck() subroutine, but this can be overkill especially when methods are expected to be fast.
 
+Example NSMutableDictionary description as output via NSLog:
+{
+    key = value;
+    ackle = foo;
+    greep = bar;
+    ponies = oop;
+}
+
 Change History:
     12_12_10_01_00_000: Started public source
     12_12_10_01_00_001: Changed remaining mentions of kASDictionary_ValueNotFound to missing value
