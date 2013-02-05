@@ -35,6 +35,7 @@ Change History:
     13_01_05_01_02_003: Added "Big" data burn tests to check speed
     13_01_05_01_03_000:	Added removeValueForKey() and removeValuesForKeys(), making this class mutable
     						Added burn tests for removeValueForKey() and removeValuesForKeys()
+    13_02_05_01_04_000:	Added text output of the hash table for troubleshooting
 *)
 
 on MakeDictionary() -- as ASDictionary
@@ -284,16 +285,19 @@ on MakeDictionary() -- as ASDictionary
 		-- this is created in __setKeyAndIndexToHash when we actually need it.
 		property __keyIndexHash : {}
 		
-		-- Unicode support: 0123456789:'<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz
+		-- Unicode support: (* !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~*)
+		
+		property __val_lo : 32
+		property __val_hi : 126
+		
 		property __val_0 : 48
 		property __val_9 : 57
 		property __upper_a : 65
 		property __upper_z : 90
-		property __upper_offset : 7 -- deprecated
 		property __lower_a : 97
 		property __lower_z : 122
-		property __lower_offset : 13 -- deprecated
-		property __unsupported_chr : __lower_z - __val_0 + 1
+		
+		property __unsupported_chr : __val_hi - __val_lo + 1
 		
 		on __makeGlyphNode() -- (void) as node
 			(*
@@ -378,7 +382,7 @@ on MakeDictionary() -- as ASDictionary
 		on __chrToHashIndex(chr) -- (string) as int
 			
 			-- get the unicode value of the character
-			set val to ((id of chr) - __val_0)
+			set val to ((id of chr) - __val_lo) + 1
 			
 			if val ≥ __unsupported_chr or val ≤ 1 then
 				set val to __unsupported_chr
@@ -440,15 +444,126 @@ on MakeDictionary() -- as ASDictionary
 			return resultList
 		end __merge
 		
+		on hashDescription()
+			__traverseChildNodes(__keyIndexHash) of me
+		end hashDescription
+		
+		on __traverseChildNodes(node)
+			__printNode(node) of me
+			repeat with i from 1 to __unsupported_chr
+				if ((item i of nodes of node) is not missing value) then
+					__traverseChildNodes(item i of nodes of node)
+				end if
+			end repeat
+		end __traverseChildNodes
+		
+		on __printNode(node) -- (node) as string
+			set output to {}
+			
+			repeat with i from 1 to __unsupported_chr
+				if ((item i of nodes of node) is not missing value) then
+					set end of output to (character id (i + __val_lo - 1))
+				else
+					set end of output to "."
+				end if
+			end repeat
+			
+			set end of output to index of node as string
+			
+			log __JoinList(output, " ") of me
+		end __printNode
+		
+		on __JoinList(theList, TheDelimiter)
+			set AppleScript's text item delimiters to {TheDelimiter}
+			set TheListAsText to theList as text
+			set AppleScript's text item delimiters to ""
+			return TheListAsText
+		end __JoinList
+		
 	end script
 	
 	return ASDictionary
 	
 end MakeDictionary
 
+property kFileList : {}
+
+on run {}
+	
+	set kFileList to {}
+	
+	tell application "Finder"
+		set source_folder to choose folder with prompt "Please select directory." --"Mac9:PDF_Library"
+		my createList(source_folder)
+	end tell
+	
+	set dict to MakeDictionary() of me
+	
+	-- run through the file list and record the count for each instance
+	
+	set lastPDF to (count kFileList)
+	repeat with thisPDF from 1 to lastPDF
+		set thePDF to item thisPDF of kFileList
+		
+		set keyExists to hasKey(thePDF) of dict
+		
+		if not keyExists then
+			set valueSet to setValueForKey(0, thePDF) of dict
+		end if
+		
+		set theCount to valueForKey(thePDF) of dict
+		set theCount to theCount + 1
+		set updatedValueSet to setValueForKey(theCount, thePDF) of dict
+		
+	end repeat
+	
+	set theKeys to getKeys() of dict
+	set theValues to getValues() of dict
+	
+	set lastKey to (count theKeys)
+	
+	repeat with thisKey from 1 to lastKey
+		log {item thisKey of theKeys, item thisKey of theValues}
+	end repeat
+	
+	hashDescription() of dict
+	
+end run
+
+on createList(mSource_folder)
+	set item_list to ""
+	
+	tell application "System Events"
+		set item_list to get the name of every disk item of (mSource_folder as alias)
+	end tell
+	
+	set item_count to (get count of items in item_list)
+	
+	repeat with i from 1 to item_count
+		set the_properties to ""
+		
+		set the_item to item i of the item_list
+		set the_item to ((mSource_folder & the_item) as string) as alias
+		
+		tell application "System Events"
+			set file_info to get info for the_item
+		end tell
+		
+		if visible of file_info is true then
+			set file_name to displayed name of file_info
+			
+			if folder of file_info is true and file_name is not "Thumbnails" then
+				my createList(the_item)
+			else
+				set end of kFileList to file_name
+			end if
+		end if
+		
+	end repeat
+end createList
+
 (*
 	Burn Tests
-*)
 
 on run {}
 	
@@ -610,3 +725,5 @@ on SplitString(theString, TheDelimiter) -- (string, string) as list
 	return theStringList
 end SplitString
 
+
+*)
